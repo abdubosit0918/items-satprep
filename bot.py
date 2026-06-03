@@ -388,14 +388,14 @@ class SubscriptionMiddleware(BaseMiddleware):
             return None
 
         if isinstance(event, Message):
-            msg: Message = event                          # ← cast so .answer() resolves
-            if not msg.from_user:
+            if not event.from_user:
                 return None
-            await capture_start_payload(msg)
-            if await is_subscribed(bot, msg.from_user.id):
+            await capture_start_payload(event)
+            if await is_subscribed(bot, event.from_user.id):
                 return await handler(event, data)
-            await msg.answer(                             # ← use msg, not event
-                subscribe_prompt_text(),
+            await bot.send_message(
+                chat_id=event.chat.id,
+                text=subscribe_prompt_text(),
                 reply_markup=subscribe_keyboard(),
             )
             return None
