@@ -388,12 +388,13 @@ class SubscriptionMiddleware(BaseMiddleware):
             return None
 
         if isinstance(event, Message):
-            if not event.from_user:
+            msg: Message = event                          # ← cast so .answer() resolves
+            if not msg.from_user:
                 return None
-            await capture_start_payload(event)
-            if await is_subscribed(bot, event.from_user.id):
+            await capture_start_payload(msg)
+            if await is_subscribed(bot, msg.from_user.id):
                 return await handler(event, data)
-            await event.answer(
+            await msg.answer(                             # ← use msg, not event
                 subscribe_prompt_text(),
                 reply_markup=subscribe_keyboard(),
             )
@@ -588,7 +589,6 @@ async def main() -> None:
         token=get_bot_token(),
         default=DefaultBotProperties(parse_mode=ParseMode.HTML),
     )
-    # Ensure polling (not webhook) and keep queued updates after restarts
     await bot.delete_webhook(drop_pending_updates=False)
     try:
         await validate_channel(bot)
