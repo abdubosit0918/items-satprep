@@ -44,44 +44,7 @@ def get_channel_join_url(channel_username: str) -> str:
     if invite_link:
         if invite_link.startswith("http"):
             return invite_link
-        # value like "@ieltssat_prep" or "ieltssat_prep" — build a proper URL
         return "https://t.me/" + invite_link.lstrip("@").lstrip("/")
-    return f"https://t.me/{channel_username.lstrip('@')}"
-
-
-def get_materials_channel_link() -> str:
-    link = _clean(os.getenv("MATERIALS_CHANNEL_LINK", ""))
-    if not link:
-        raise RuntimeError("MATERIALS_CHANNEL_LINK is not set in .env")
-    return link
-
-
-def get_admin_ids() -> set[int]:
-    raw = _clean(os.getenv("ADMIN_IDS", "7897407913"))
-    ids: set[int] = set()
-    for part in raw.split(","):
-        part = part.strip()
-        if part.isdigit():
-            ids.add(int(part))
-    if not ids:
-        raise RuntimeError("ADMIN_IDS is not set in .env")
-    return ids
-
-
-def get_db_path() -> str:
-    return _clean(os.getenv("DB_PATH", "bot.db")) or "bot.db"    if not channel:
-        raise RuntimeError(
-            "CHANNEL_USERNAME is not set in .env (use your public channel @username)."
-        )
-    if not channel.startswith("@"):
-        channel = f"@{channel}"
-    return channel
-
-
-def get_channel_join_url(channel_username: str) -> str:
-    invite_link = _clean(os.getenv("CHANNEL_INVITE_LINK", ""))
-    if invite_link:
-        return invite_link
     return f"https://t.me/{channel_username.lstrip('@')}"
 
 
