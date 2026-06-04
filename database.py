@@ -182,21 +182,24 @@ def set_referral_validity(referred_id: int, is_valid: bool) -> tuple[int | None,
         if not row:
             return None, False
 
-        new_value = 1 if is_valid else 0
-        if row["is_valid"] == new_value:
+        # Never downgrade a referral that is already valid.
+        # Once earned, it stays earned regardless of future subscription checks.
+        if row["is_valid"] == 1:
             return row["referrer_id"], False
 
-        newly_validated = is_valid
-        validated_at = _now() if is_valid else None
+        # Only upgrade: invalid -> valid
+        if not is_valid:
+            return row["referrer_id"], False
+
         conn.execute(
             """
             UPDATE referrals
-            SET is_valid = ?, validated_at = ?
+            SET is_valid = 1, validated_at = ?
             WHERE referred_id = ?
             """,
-            (new_value, validated_at, referred_id),
+            (_now(), referred_id),
         )
-        return row["referrer_id"], newly_validated
+        return row["referrer_id"], True
 
 
 def count_valid_referrals(referrer_id: int) -> int:
